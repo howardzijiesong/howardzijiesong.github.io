@@ -2,4 +2,13 @@
 title: "About"
 ---
 
-About this site
+## Background
+I graduated from Queens university in Software Design and did a thesis on convolutional neural networks.
+I then worked at a point of sale company in Vancouver for a year before moving to a startup based in New York.
+
+## Photography
+I own several cameras including a Nikon F2 and a Hasselblad 500 c/m. I enjoy taking landscape photos of my vactions. And find the process of shooting film to be rewarding.
+
+## Video Games
+I play a ton of Dota 2 and also enjoy rouge-lites. The masters program has unfortuantely reduced my free time to enjoy these games and also reduced the time I have for gatcha games like Arknights:Endfield.
+
