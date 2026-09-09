@@ -1,7 +1,11 @@
 ---
-title: "About Me"
+title: "Howard Song"
+about:
+  template: broadside
+  image: images/profile.jpg
 ---
 
-This is a Quarto website.
+![](images/profile.jpg){width=250px}
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+I am Howard Song a student at UBC's MDS program. My hobbies are photography and gaming.
+I hope to meet some interesting people and learn some new skills along the way.
