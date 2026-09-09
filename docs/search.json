@@ -1,16 +1,51 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "About Me",
+    "objectID": "posts/first-weeks/index.html",
+    "href": "posts/first-weeks/index.html",
+    "title": "My first weeks in MDS",
     "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites."
+    "text": "Orientation and the first week of classes were a whirlwind of action. Meeting new people and socializing with my cohort was both exhausting and rewarding. I met a ton of very interesting people and hope that I can continue to make more friends throughout the year.\nWhile the coursework was relatively easy in the first week I’m a bit worried that I wont be able to keep up or will get buried in an avalanch of work. The one hour commute also doesn’t help.\nI hope that this page can serve as a record of the trials and tribulations I experience as this year starts.\n\n\n\nFinding free public transportation on campus!"
+  },
+  {
+    "objectID": "blog.html",
+    "href": "blog.html",
+    "title": "Blog",
+    "section": "",
+    "text": "My first weeks in MDS\n\n\n\n\n\n\n\n\nSep 9, 2026\n\n\nHoward Song\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
     "section": "",
-    "text": "About this site"
+    "text": "I graduated from Queens university in Software Design and did a thesis on convolutional neural networks. I then worked at a point of sale company in Vancouver for a year before moving to a startup based in New York."
+  },
+  {
+    "objectID": "about.html#background",
+    "href": "about.html#background",
+    "title": "About",
+    "section": "",
+    "text": "I graduated from Queens university in Software Design and did a thesis on convolutional neural networks. I then worked at a point of sale company in Vancouver for a year before moving to a startup based in New York."
+  },
+  {
+    "objectID": "about.html#photography",
+    "href": "about.html#photography",
+    "title": "About",
+    "section": "Photography",
+    "text": "Photography\nI own several cameras including a Nikon F2 and a Hasselblad 500 c/m. I enjoy taking landscape photos of my vactions. And find the process of shooting film to be rewarding."
+  },
+  {
+    "objectID": "about.html#video-games",
+    "href": "about.html#video-games",
+    "title": "About",
+    "section": "Video Games",
+    "text": "Video Games\nI play a ton of Dota 2 and also enjoy rouge-lites. The masters program has unfortuantely reduced my free time to enjoy these games and also reduced the time I have for gatcha games like Arknights:Endfield."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Howard Song",
+    "section": "",
+    "text": "I am Howard Song a student at UBC’s MDS program. My hobbies are photography and gaming. I hope to meet some interesting people and learn some new skills along the way."
   }
 ]
