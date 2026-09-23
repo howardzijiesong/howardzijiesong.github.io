@@ -2,6 +2,7 @@
 title: "My analysis in R"
 author: "Howard Song"
 date: "2026-09-23"
+description: "Exploring camera sensor sizes and resolution by manufacturer, this time in R."
 ---
 
 ```{r}
@@ -62,8 +63,6 @@ top_makers <- df |>
 df_top <- df |> filter(CameraMaker %in% top_makers)
 
 df_other <- df |> filter(!CameraMaker %in% top_makers)
-
-top_makers
 
 top_makers
 ```
@@ -184,7 +183,7 @@ Leica and Pentax medium format cameras! Very expensive.
 #| fig-cap: "Look at these weirdos!"
 #| fig-width: 9
 #| fig-height: 5.5
-outliers <- rbind(tiny, medium)
+outliers <- rbind(tiny, medium) |> filter(!is.na(CameraModel))
 
 ggplot(mapping = aes(x = area_mm2, y = megapixels)) +
   geom_vline(

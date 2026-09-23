@@ -2,19 +2,21 @@
 title: "My analysis in Python"
 author: "Howard Song"
 date: "2026-09-21"
+description: "Exploring camera sensor sizes and resolution by manufacturer, in Python."
 ---
 
 ```{python}
 #| message: false
 #| warning: false
 import pandas as pd
-import matplotlib
+import matplotlib.pyplot as plt
 
 df = pd.read_csv("sensor_database_detailed.csv")
 
 ```
 
-Sensor data acquired from: https://github.com/openMVG/CameraSensorSizeDatabase
+Sensor data acquired from: <https://github.com/openMVG/CameraSensorSizeDatabase>
+
 MIT License included in repo.
 
 ```{python}
@@ -24,8 +26,7 @@ Here is my dataset on camera sensors. We will be using this to explore how diffe
 
 ```{python}
 #| label: load-data
-import pandas as pd
-import matplotlib.pyplot as plt
+
 
 df = df.rename(columns={
     "SensorWidth(mm)": "width_mm",
@@ -168,7 +169,8 @@ ax.set_ylabel("Resolution (megapixels)")
 ax.legend(title="Maker", fontsize="small")
 
 
-outliers = pd.concat([tiny, medium])
+outliers = pd.concat([tiny, medium]).dropna(subset=["CameraModel"])
+
 for _, row in outliers.iterrows():
     right_side = row["area_mm2"] > 100
     ax.annotate(row["CameraModel"], (row["area_mm2"], row["megapixels"]),
