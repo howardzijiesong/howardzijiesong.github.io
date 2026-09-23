@@ -10,32 +10,34 @@ date: "2026-09-23"
 #| warning: false
 library(dplyr)
 library(ggplot2)
-library(tidyverse)
+library(readr)
 ```
+
 
 ```{r}
 #| label: load-data
-# TODO (you): read the CSV and build `df`.
-#
-# The plots below expect `df` to have these columns:
-#   CameraMaker, CameraModel, SensorDescription   (character)
-#   width_mm, height_mm                           (numeric, from the "(mm)" columns)
-#   width_px, height_px                           (numeric, from the "(pixels)" columns)
-#   area_mm2        = width_mm * height_mm
-#   megapixels      = width_px * height_px / 1e6, rounded to 2 decimal places
-#   pixel_pitch_um  = width_mm / width_px * 1000
-#
-# Note: the original names contain parentheses, so they are non-syntactic in R.
-# You need backticks around them, e.g. `SensorWidth(mm)`.
+df <- read_csv("sensor_database_detailed.csv", show_col_types = FALSE) |>
+  rename(
+    width_mm = `SensorWidth(mm)`,
+    height_mm = `SensorHeight(mm)`,
+    width_px = `SensorWidth(pixels)`,
+    height_px = `SensorHeight(pixels)`
+  ) |>
+  mutate(across(c(width_mm, height_mm, width_px, height_px), as.numeric))
 
-df <- read_csv("sensor_database_detailed.csv")
+df <- df |>
+  mutate(area_mm2 = width_mm * height_mm) |>
+  mutate(megapixels = round(width_px * height_px / 1000000, digits = 2)) |>
+  mutate(pixel_pitch_um = width_mm / width_px * 1000)
 
 head(df)
 ```
 
 Here is my dataset on camera sensors. We will be using this to explore how different manufacturers make products in specific sectors.
 
-<!-- TODO: add the data source line here — where the CSV came from, with a link, plus its licence. The rubric wants this in the post itself, not only the README. -->
+Sensor data acquired from: <https://github.com/openMVG/CameraSensorSizeDatabase>
+
+MIT License included in repo.
 
 Let's calculate the sensor size and resolution using the data we are given. We'll use a logarithmic scale for the sensor area as the smallest sensors used are 50x smaller than the largest sensors!
 
@@ -43,12 +45,19 @@ We'll also calculate the pixel pitch. This is the width of a pixel and tells us 
 
 ```{r}
 #| label: maker-groups
-# TODO (you): split the makers so the busiest ones get their own colour.
-#
-# Produce three objects:
-#   top_makers : character vector, the 7 CameraMaker values with the most rows
-#   df_top     : the rows of df whose CameraMaker is in top_makers
-#   df_other   : all the remaining rows
+
+top_makers <- df |>
+  group_by(CameraMaker) |>
+  summarize(total = n()) |>
+  arrange(desc(total)) |>
+  slice(1:7) |>
+  pull(CameraMaker)
+
+df_top <- df |> filter(CameraMaker %in% top_makers)
+
+df_other <- df |> filter(!CameraMaker %in% top_makers)
+
+top_makers
 
 top_makers
 ```
@@ -80,14 +89,20 @@ While we can clearly see some trends it doesn't make much sense to us right now.
 
 ```{r}
 #| label: sensor-formats
-# TODO (you): build `formats`, a data frame of reference sensor sizes with columns
-#   format    (character): '1/2.3"', '1/1.7"', '2/3"', '1"',
-#                          "Micro 4/3", "APS-C", "Full frame", "Medium (GFX)"
-#   width_mm  (numeric):     6.17, 7.60, 8.80, 13.20, 17.30, 23.60, 36.00, 43.80
-#   height_mm (numeric):     4.55, 5.70, 6.60,  8.80, 13.00, 15.60, 24.00, 32.90
-#   area_mm2  = width_mm * height_mm
+formats <- tribble(
+  ~format,        ~width_mm, ~height_mm,
+  '1/2.3"',            6.17,       4.55,
+  '1/1.7"',            7.60,       5.70,
+  '2/3"',              8.80,       6.60,
+  '1"',               13.20,       8.80,
+  "Micro 4/3",        17.30,      13.00,
+  "APS-C",            23.60,      15.60,
+  "Full frame",       36.00,      24.00,
+  "Medium (GFX)",     43.80,      32.90
+) |>
+  mutate(area_mm2 = width_mm * height_mm)
 
-formats
+knitr::kable(formats, digits = c(0, 2, 2, 1))
 ```
 
 I found the sensor size data from wikipedia [here](https://en.wikipedia.org/wiki/Image_sensor_format)
@@ -129,7 +144,7 @@ cols <- c(
   "width_mm", "height_mm", "area_mm2", "megapixels"
 )
 
-# TODO (you): build `tiny` — the rows of df with area_mm2 < 10, sorted by megapixels
+tiny <- df |> filter(area_mm2 < 10) |> arrange(megapixels)
 
 tiny |>
   select(all_of(cols)) |>
@@ -142,7 +157,7 @@ Looks like it's a weird Olympus camera/music player combo along with 2 raspberry
 
 ```{r}
 #| label: medium-format
-# TODO (you): build `medium` — the rows of df with area_mm2 > 1000, sorted by area_mm2
+medium <- df |> filter(area_mm2 > 1000) |> arrange(area_mm2)
 
 medium |>
   select(all_of(cols)) |>
@@ -151,7 +166,7 @@ medium |>
 
 ```{r}
 #| label: medium-format-counts
-# TODO (you): build `medium_counts` — the number of rows per CameraMaker in `medium`
+medium_counts <- medium |> group_by(CameraMaker) |> summarize(total = n())
 
 knitr::kable(medium_counts)
 ```
@@ -163,7 +178,7 @@ Leica and Pentax medium format cameras! Very expensive.
 #| fig-cap: "Look at these weirdos!"
 #| fig-width: 9
 #| fig-height: 5.5
-# TODO (you): build `outliers` — the rows of `tiny` and `medium` stacked together
+outliers <- rbind(tiny, medium)
 
 ggplot(mapping = aes(x = area_mm2, y = megapixels)) +
   geom_vline(
@@ -200,7 +215,7 @@ We also see 2 weird dots with very high megapixel counts on comparatively small 
 
 ```{r}
 #| label: small-high-mp
-# TODO (you): build `small_high_mp` — rows of df with megapixels > 35 and area_mm2 < 200
+small_high_mp <- df |> filter(megapixels > 35) |> filter(area_mm2 < 200)
 
 small_high_mp |>
   select(all_of(cols)) |>
@@ -215,7 +230,7 @@ Now that we have some weirdly dense sensors let's use the pixel pitch calculatio
 
 ```{r}
 #| label: high-mp-comparison
-# TODO (you): build `high_mp` — rows of df with megapixels > 35, sorted by area_mm2
+high_mp <- df |> filter(megapixels > 35) |> arrange(area_mm2)
 
 high_mp |>
   select(CameraMaker, CameraModel, area_mm2, megapixels, pixel_pitch_um) |>
