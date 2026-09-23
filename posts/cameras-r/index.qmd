@@ -1,0 +1,230 @@
+---
+title: "My analysis in R"
+author: "Howard Song"
+date: "2026-09-23"
+---
+
+```{r}
+#| label: setup
+#| message: false
+#| warning: false
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r}
+#| label: load-data
+# TODO (you): read the CSV and build `df`.
+#
+# The plots below expect `df` to have these columns:
+#   CameraMaker, CameraModel, SensorDescription   (character)
+#   width_mm, height_mm                           (numeric, from the "(mm)" columns)
+#   width_px, height_px                           (numeric, from the "(pixels)" columns)
+#   area_mm2        = width_mm * height_mm
+#   megapixels      = width_px * height_px / 1e6, rounded to 2 decimal places
+#   pixel_pitch_um  = width_mm / width_px * 1000
+#
+# Note: the original names contain parentheses, so they are non-syntactic in R.
+# You need backticks around them, e.g. `SensorWidth(mm)`.
+
+df <- read_csv("sensor_database_detailed.csv")
+
+head(df)
+```
+
+Here is my dataset on camera sensors. We will be using this to explore how different manufacturers make products in specific sectors.
+
+<!-- TODO: add the data source line here — where the CSV came from, with a link, plus its licence. The rubric wants this in the post itself, not only the README. -->
+
+Let's calculate the sensor size and resolution using the data we are given. We'll use a logarithmic scale for the sensor area as the smallest sensors used are 50x smaller than the largest sensors!
+
+We'll also calculate the pixel pitch. This is the width of a pixel and tells us how small each unit of light gathering "pixel" is. This will be interesting if a camera sensor does pixel binning or other such computational photography techniques.
+
+```{r}
+#| label: maker-groups
+# TODO (you): split the makers so the busiest ones get their own colour.
+#
+# Produce three objects:
+#   top_makers : character vector, the 7 CameraMaker values with the most rows
+#   df_top     : the rows of df whose CameraMaker is in top_makers
+#   df_other   : all the remaining rows
+
+top_makers
+```
+
+```{r}
+#| label: fig-sensor-area-vs-mp
+#| fig-cap: "Sensor area against resolution. The seven makers with the most models are coloured; all others are grey."
+#| fig-width: 8
+#| fig-height: 5
+maker_colours <- c(
+  "Other" = "grey80",
+  setNames(scales::hue_pal()(length(top_makers)), top_makers)
+)
+
+ggplot(mapping = aes(x = area_mm2, y = megapixels)) +
+  geom_point(data = df_other, aes(colour = "Other"), size = 1.2) +
+  geom_point(data = df_top, aes(colour = CameraMaker), size = 1.4, alpha = 0.7) +
+  scale_x_log10(labels = scales::label_number()) +
+  scale_colour_manual(values = maker_colours, breaks = c("Other", top_makers)) +
+  labs(
+    x = "Sensor area (mm², log scale)",
+    y = "Resolution (megapixels)",
+    colour = "Maker"
+  ) +
+  theme_minimal()
+```
+
+While we can clearly see some trends it doesn't make much sense to us right now. So let's add some calculated sensor sizes for some more context.
+
+```{r}
+#| label: sensor-formats
+# TODO (you): build `formats`, a data frame of reference sensor sizes with columns
+#   format    (character): '1/2.3"', '1/1.7"', '2/3"', '1"',
+#                          "Micro 4/3", "APS-C", "Full frame", "Medium (GFX)"
+#   width_mm  (numeric):     6.17, 7.60, 8.80, 13.20, 17.30, 23.60, 36.00, 43.80
+#   height_mm (numeric):     4.55, 5.70, 6.60,  8.80, 13.00, 15.60, 24.00, 32.90
+#   area_mm2  = width_mm * height_mm
+
+formats
+```
+
+I found the sensor size data from wikipedia [here](https://en.wikipedia.org/wiki/Image_sensor_format)
+
+```{r}
+#| label: fig-sensor-area-vs-mp-sensor-type
+#| fig-cap: "Sensor area against resolution. Dashed lines mark common sensor formats. The seven makers with the most models are coloured; all others are grey."
+#| fig-width: 9
+#| fig-height: 5.5
+ggplot(mapping = aes(x = area_mm2, y = megapixels)) +
+  geom_vline(
+    data = formats, aes(xintercept = area_mm2),
+    linetype = "dashed", linewidth = 0.4, alpha = 0.4
+  ) +
+  geom_text(
+    data = formats, aes(x = area_mm2, y = Inf, label = format),
+    angle = 90, hjust = -0.05, vjust = 0.5, size = 2.8, inherit.aes = FALSE
+  ) +
+  geom_point(data = df_other, aes(colour = "Other"), size = 1.2) +
+  geom_point(data = df_top, aes(colour = CameraMaker), size = 1.4, alpha = 0.7) +
+  scale_x_log10(labels = scales::label_number()) +
+  scale_colour_manual(values = maker_colours, breaks = c("Other", top_makers)) +
+  labs(
+    x = "Sensor area (mm², log scale)",
+    y = "Resolution (megapixels)",
+    colour = "Maker"
+  ) +
+  coord_cartesian(clip = "off") +
+  theme_minimal() +
+  theme(plot.margin = margin(t = 45, r = 5, b = 5, l = 5))
+```
+
+We notice here that there are 3 cameras with very large sensors and 3 with very small sensors so let's have a look at these.
+
+```{r}
+#| label: outliers
+cols <- c(
+  "CameraMaker", "CameraModel", "SensorDescription",
+  "width_mm", "height_mm", "area_mm2", "megapixels"
+)
+
+# TODO (you): build `tiny` — the rows of df with area_mm2 < 10, sorted by megapixels
+
+tiny |>
+  select(all_of(cols)) |>
+  knitr::kable()
+```
+
+Looks like it's a weird Olympus camera/music player combo along with 2 raspberry pi camera sensor modules.
+
+![What were they thinking?](mrobe.jpg){width=200px}
+
+```{r}
+#| label: medium-format
+# TODO (you): build `medium` — the rows of df with area_mm2 > 1000, sorted by area_mm2
+
+medium |>
+  select(all_of(cols)) |>
+  knitr::kable()
+```
+
+```{r}
+#| label: medium-format-counts
+# TODO (you): build `medium_counts` — the number of rows per CameraMaker in `medium`
+
+knitr::kable(medium_counts)
+```
+
+Leica and Pentax medium format cameras! Very expensive.
+
+```{r}
+#| label: fig-outlier-cameras
+#| fig-cap: "Look at these weirdos!"
+#| fig-width: 9
+#| fig-height: 5.5
+# TODO (you): build `outliers` — the rows of `tiny` and `medium` stacked together
+
+ggplot(mapping = aes(x = area_mm2, y = megapixels)) +
+  geom_vline(
+    data = formats, aes(xintercept = area_mm2),
+    linetype = "dashed", linewidth = 0.4, alpha = 0.4
+  ) +
+  geom_text(
+    data = formats, aes(x = area_mm2, y = Inf, label = format),
+    angle = 90, hjust = -0.05, vjust = 0.5, size = 2.8, inherit.aes = FALSE
+  ) +
+  geom_point(data = df_other, aes(colour = "Other"), size = 1.2) +
+  geom_point(data = df_top, aes(colour = CameraMaker), size = 1.4, alpha = 0.7) +
+  geom_text(
+    data = outliers,
+    aes(
+      x = area_mm2, y = megapixels, label = CameraModel,
+      hjust = ifelse(area_mm2 > 100, 1.1, -0.1)
+    ),
+    size = 2.2, inherit.aes = FALSE
+  ) +
+  scale_x_log10(labels = scales::label_number()) +
+  scale_colour_manual(values = maker_colours, breaks = c("Other", top_makers)) +
+  labs(
+    x = "Sensor area (mm², log scale)",
+    y = "Resolution (megapixels)",
+    colour = "Maker"
+  ) +
+  coord_cartesian(clip = "off") +
+  theme_minimal() +
+  theme(plot.margin = margin(t = 45, r = 5, b = 5, l = 5))
+```
+
+We also see 2 weird dots with very high megapixel counts on comparatively small sensor sizes.
+
+```{r}
+#| label: small-high-mp
+# TODO (you): build `small_high_mp` — rows of df with megapixels > 35 and area_mm2 < 200
+
+small_high_mp |>
+  select(all_of(cols)) |>
+  knitr::kable()
+```
+
+They turn out to be Nokia phones. These 41 mega pixel monsters were released in 2012 for the 808 and 2013 for the 1020.
+
+They use a technique called pixel binning which takes an average of the information in adjacent pixels to make a "super pixel" that has higher low light performance.
+
+Now that we have some weirdly dense sensors let's use the pixel pitch calculation that we did before.
+
+```{r}
+#| label: high-mp-comparison
+# TODO (you): build `high_mp` — rows of df with megapixels > 35, sorted by area_mm2
+
+high_mp |>
+  select(CameraMaker, CameraModel, area_mm2, megapixels, pixel_pitch_um) |>
+  knitr::kable(digits = 2)
+```
+
+We can see that even though the Leica S2 has a lower megapixel count than the Nokia 808, the pixel pitch ends up being over 5 times bigger. This results in better light gathering per pixel and higher image quality.
+Add that to the much larger and higher quality lenses that the Leica uses and you get image quality that is incomparable to the Nokia.
+
+The devil really is in the details!
+
+>AI Disclosure: All analysis are my own but I used claude to give a general framework of and to pretty up graphs along with calculating the industry standard sensor sizes. For R I had claude convert the python graph code into R.

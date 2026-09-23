@@ -14,6 +14,9 @@ df = pd.read_csv("sensor_database_detailed.csv")
 
 ```
 
+Sensor data acquired from: https://github.com/openMVG/CameraSensorSizeDatabase
+MIT License included in repo.
+
 ```{python}
 df.head()
 ```
@@ -138,7 +141,7 @@ medium["CameraMaker"].value_counts()
 Leica and Pentax medium format cameras! Very expensive.
 
 ```{python}
-#| label: outlier-cameras
+#| label: fig-outlier-cameras
 #| fig-cap: "Look at these weirdos!"
 
 top_makers = df["CameraMaker"].value_counts().nlargest(7).index
