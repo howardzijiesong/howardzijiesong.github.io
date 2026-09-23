@@ -127,7 +127,7 @@ tiny[cols]
 
 Looks like it's a weird Olympus camera/music player combo along with 2 raspberry pi camera sensor modules. 
 
-![What were they thinking?](mrobe.jpg){width=200px}
+![What were they thinking?](https://www.ephotozine.com/articles/olympus-announce-m-robe---new--musical-memory-maker-concept-1933/images/highres-olympus-m-robe-mr-500ijpg_1556715475.jpg){width=200px}
 
 ```{python}
 medium = df[df["area_mm2"] > 1000].sort_values("area_mm2")
